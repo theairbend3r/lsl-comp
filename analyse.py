@@ -80,10 +80,16 @@ def verify_data_loss(
 
     outlet_number_subset = outlet_number_arr[first_inlet_number_idx_in_outlet:]
 
-    return not all(inlet_number_arr == outlet_number_subset)
+    try:
+        return not all(inlet_number_arr == outlet_number_subset)
+    except Exception as e:
+        print(e)
+        return True
 
 
-def get_window_duration(df_inlet: pl.DataFrame, window_size: int) -> float | None:
+def get_window_duration(
+    df_inlet: pl.DataFrame, window_size: int
+) -> tuple[float | None, float | None]:
     if window_size > 1:
         window_latency = df_inlet.with_columns(
             (
@@ -91,16 +97,19 @@ def get_window_duration(df_inlet: pl.DataFrame, window_size: int) -> float | Non
             ).alias("window_time")
         )["window_time"].to_numpy()
 
-        return np.mean(window_latency).item()
+        return np.mean(window_latency).item(), np.std(window_latency).item()
     else:
-        return None
+        return None, None
 
 
-def get_average_latency(df_inlet: pl.DataFrame) -> float:
+def get_average_latency(df_inlet: pl.DataFrame) -> tuple[float | None, float | None]:
     t_gen_outlet = df_inlet["t_gen_outlet"].explode().to_numpy()
     t_arr_inlet = df_inlet["t_arr_inlet"].explode().to_numpy()
 
-    return np.mean(t_arr_inlet - t_gen_outlet).item()
+    return (
+        np.mean(t_arr_inlet - t_gen_outlet).item(),
+        np.std(t_arr_inlet - t_gen_outlet).item(),
+    )
 
 
 # ===========================================
@@ -151,11 +160,11 @@ for run_id in run_ids:
             pl.col("t_arr_inlet").str.split(";").cast(pl.List(pl.Float64)),
         )
 
-    avg_latency = get_average_latency(df_inlet=df_inlet)
+    avg_latency, std_latency = get_average_latency(df_inlet=df_inlet)
     is_data_loss = verify_data_loss(
         df_outlet=df_outlet, df_inlet=df_inlet, window_size=meta_info["window_size"]
     )
-    avg_window_duration = get_window_duration(
+    avg_window_duration, std_window_duration = get_window_duration(
         df_inlet=df_inlet, window_size=meta_info["window_size"]
     )
 
@@ -165,7 +174,9 @@ for run_id in run_ids:
             **{
                 "is_data_loss": is_data_loss,
                 "avg_window_duration": avg_window_duration,
+                "std_window_duration": avg_window_duration,
                 "avg_latency": avg_latency,
+                "std_latency": avg_latency,
             },
         }
     )
