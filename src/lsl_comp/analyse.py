@@ -112,77 +112,79 @@ def get_average_latency(df_inlet: pl.DataFrame) -> tuple[float | None, float | N
     )
 
 
-# ===========================================
+def analyse() -> None:
+    basepath_logfiles = Path("./logs/")
+    log_files = list(basepath_logfiles.glob("*.csv"))
 
+    # "id": None,
+    # "outlet": None,
+    # "inlet": None,
+    # "datatype": None,
+    # "platform": None,
+    # "multiproc": None,
+    # "fs": None,
+    # "window_size": None,
+    dict_for_df = []
 
-basepath_logfiles = Path("./logs/")
-log_files = list(basepath_logfiles.glob("*.csv"))
+    # get all run_ids
+    run_ids = [int(f.name.split("_")[0].split("-")[-1]) for f in log_files]
+    run_ids = sorted(list(set(run_ids)))
 
-# "id": None,
-# "outlet": None,
-# "inlet": None,
-# "datatype": None,
-# "platform": None,
-# "multiproc": None,
-# "fs": None,
-# "window_size": None,
-dict_for_df = []
+    for run_id in run_ids:
+        logfiles = [
+            f for f in log_files if f.name.split("_")[0].split("-")[-1] == str(run_id)
+        ]
 
+        if len(logfiles) != 2:
+            raise ValueError(
+                f"More or less than the required 2 files; one for each outlet and inlet.\n{logfiles}"
+            )
 
-# get all run_ids
-run_ids = [int(f.name.split("_")[0].split("-")[-1]) for f in log_files]
-run_ids = sorted(list(set(run_ids)))
-
-for run_id in run_ids:
-    logfiles = [
-        f for f in log_files if f.name.split("_")[0].split("-")[-1] == str(run_id)
-    ]
-
-    if len(logfiles) != 2:
-        raise ValueError(
-            f"More or less than the required 2 files; one for each outlet and inlet.\n{logfiles}"
+        meta_info = extract_metainfo(log_files=logfiles)
+        outlet_log_filename, inlet_log_filename = assign_xlet_filename(
+            log_files=logfiles
         )
 
-    meta_info = extract_metainfo(log_files=logfiles)
-    outlet_log_filename, inlet_log_filename = assign_xlet_filename(log_files=logfiles)
-
-    df_outlet = pl.read_csv(outlet_log_filename).with_columns(
-        pl.col("x").cast(pl.Float64),
-    )
-
-    if meta_info["window_size"] == 1:
-        df_inlet = pl.read_csv(inlet_log_filename)
-    else:
-        df_inlet = pl.read_csv(inlet_log_filename).with_columns(
-            pl.col("x").str.split(";").cast(pl.List(pl.Float64)),
-            pl.col("t_gen_outlet").str.split(";").cast(pl.List(pl.Float64)),
-            pl.col("t_lsl_offset").str.split(";").cast(pl.List(pl.Float64)),
-            pl.col("t_arr_inlet").str.split(";").cast(pl.List(pl.Float64)),
+        df_outlet = pl.read_csv(outlet_log_filename).with_columns(
+            pl.col("x").cast(pl.Float64),
         )
 
-    avg_latency, std_latency = get_average_latency(df_inlet=df_inlet)
-    is_data_loss = verify_data_loss(
-        df_outlet=df_outlet, df_inlet=df_inlet, window_size=meta_info["window_size"]
-    )
-    avg_window_duration, std_window_duration = get_window_duration(
-        df_inlet=df_inlet, window_size=meta_info["window_size"]
-    )
+        if meta_info["window_size"] == 1:
+            df_inlet = pl.read_csv(inlet_log_filename)
+        else:
+            df_inlet = pl.read_csv(inlet_log_filename).with_columns(
+                pl.col("x").str.split(";").cast(pl.List(pl.Float64)),
+                pl.col("t_gen_outlet").str.split(";").cast(pl.List(pl.Float64)),
+                pl.col("t_lsl_offset").str.split(";").cast(pl.List(pl.Float64)),
+                pl.col("t_arr_inlet").str.split(";").cast(pl.List(pl.Float64)),
+            )
 
-    dict_for_df.append(
-        {
-            **meta_info,
-            **{
-                "is_data_loss": is_data_loss,
-                "avg_window_duration": avg_window_duration,
-                "std_window_duration": std_window_duration,
-                "avg_latency": avg_latency,
-                "std_latency": std_latency,
-            },
-        }
-    )
+        avg_latency, std_latency = get_average_latency(df_inlet=df_inlet)
+        is_data_loss = verify_data_loss(
+            df_outlet=df_outlet, df_inlet=df_inlet, window_size=meta_info["window_size"]
+        )
+        avg_window_duration, std_window_duration = get_window_duration(
+            df_inlet=df_inlet, window_size=meta_info["window_size"]
+        )
+
+        dict_for_df.append(
+            {
+                **meta_info,
+                **{
+                    "is_data_loss": is_data_loss,
+                    "avg_window_duration": avg_window_duration,
+                    "std_window_duration": std_window_duration,
+                    "avg_latency": avg_latency,
+                    "std_latency": std_latency,
+                },
+            }
+        )
+
+    final_df = pl.from_dicts(dict_for_df)
+    pl.Config.set_tbl_rows(999)
+    pl.Config.set_tbl_cols(999)
+    print(final_df)
 
 
-final_df = pl.from_dicts(dict_for_df)
-pl.Config.set_tbl_rows(999)
-pl.Config.set_tbl_cols(999)
-print(final_df)
+if __name__ == "__main__":
+    analyse()

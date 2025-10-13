@@ -42,11 +42,11 @@ class Combo(NamedTuple):
 @click.option(
     "--datatype", type=click.STRING, help="counter, airsignal.", required=True
 )
-def main(platform: str, datatype: str):
+def main(platform: str, datatype: str) -> None:
     # different configurations
     outlets = ["ezmsg_pylsl", "pylsl"]
     inlets = ["ezmsg_pylsl", "pylsl"]
-    total_count = [10_000]
+    total_count = [3_000]
     sampling_rate = [1000]
     multiproc = [True, False]
     window_size = [1, 60, 100]
