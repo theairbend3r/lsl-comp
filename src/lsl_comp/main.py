@@ -1,3 +1,4 @@
+import logging
 import time
 import itertools
 import subprocess
@@ -21,7 +22,7 @@ def run_script(script_name: str, args: list[str]):
     try:
         _ = subprocess.run(["python", script_name] + args, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Error occurred while running {script_name}: {e}")
+        logging.error(f"Error occurred while running {script_name}: {e}")
 
 
 class Combo(NamedTuple):
@@ -65,7 +66,7 @@ def main(platform: str, datatype: str) -> None:
         )
     )
 
-    print(f"\nTotal combos = {len(combos)}\n")
+    logging.info(f"\nTotal combos = {len(combos)}\n")
     combos = [Combo(*c) for c in combos]
 
     # ignore multiprocessing where either the inlet or outlet is pure pylsl
@@ -74,11 +75,11 @@ def main(platform: str, datatype: str) -> None:
         for c in combos
         if not ((c.outlet == "pylsl" or c.inlet == "pylsl") and c.multiproc)
     ]
-    print(f"\nValid combos = {len(combos)}\n")
+    logging.info(f"\nValid combos = {len(combos)}\n")
 
     for i, c in enumerate(combos):
-        print("=" * 50)
-        print("\n", i, c, "\n")
+        logging.debug("=" * 50)
+        logging.debug("\n", i, c, "\n")
 
         log_file_outlet = outlet_to_script[c.outlet]
         log_file_inlet = inlet_to_script[c.inlet]
@@ -88,8 +89,8 @@ def main(platform: str, datatype: str) -> None:
         mp = c.multiproc
         ws = c.window_size
 
-        print(c.outlet, log_file_outlet)
-        print(c.inlet, log_file_inlet)
+        logging.debug(c.outlet, log_file_outlet)
+        logging.debug(c.inlet, log_file_inlet)
 
         process_outlet = multiprocessing.Process(
             target=run_script,
@@ -116,7 +117,7 @@ def main(platform: str, datatype: str) -> None:
         process_outlet.join()
         process_inlet.join()
 
-        print("=" * 50)
+        logging.debug("=" * 50)
         time.sleep(1)
 
 

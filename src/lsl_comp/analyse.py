@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -83,7 +84,7 @@ def verify_data_loss(
     try:
         return not all(inlet_number_arr == outlet_number_subset)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return True
 
 
@@ -183,6 +184,7 @@ def analyse() -> None:
     final_df = pl.from_dicts(dict_for_df)
     pl.Config.set_tbl_rows(999)
     pl.Config.set_tbl_cols(999)
+
     print(final_df)
 
 

@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import time
@@ -72,13 +73,15 @@ def main(
             outlet.push_sample(mysample, curr_time)
 
             file.write(f"{curr_time},{n}\n")
-            print(curr_time - start_time, curr_time, mysample)
+            logging.debug(
+                "[pylsl-outlet] ", curr_time - start_time, curr_time, mysample
+            )
             n += 1
 
         sent_samples += required_samples
         time.sleep(1 / fs)
 
-    print("closing outlet and writing logs to disk...")
+    logging.info("closing outlet and writing logs to disk...")
     outlet.push_sample([-1], pylsl.local_clock())
     file.flush()
     file.close()

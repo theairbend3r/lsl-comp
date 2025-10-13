@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 from pathlib import Path
 
@@ -34,10 +35,10 @@ class LogOutletUnit(ez.Unit):
     async def on_message(self, message: Message) -> None:
         sample, timestamp = message.sample, message.timestamp
 
-        print(timestamp, sample)
+        logging.debug(timestamp, sample)
 
         if sample == -1:
-            print("closing outlet and writing logs to disk...")
+            logging.info("closing outlet and writing logs to disk...")
             self.STATE.file.flush()
             self.STATE.file.close()
 
@@ -81,7 +82,7 @@ class LogInletUnit(ez.Unit):
     @ez.subscriber(INPUT)
     async def on_message(self, message: str) -> None:
         if message == "-1.0":
-            print("closing inlet and writing logs to disk...")
+            logging.info("closing inlet and writing logs to disk...")
             self.STATE.file.flush()
             self.STATE.file.close()
 

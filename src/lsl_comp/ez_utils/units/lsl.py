@@ -1,6 +1,7 @@
+import logging
+from typing import Any
 from collections import deque
 from collections.abc import AsyncGenerator
-from typing import Any
 
 import pylsl
 import ezmsg.core as ez
@@ -77,8 +78,8 @@ class LSLInletUnit(ez.Unit):
                 if sample == -1:
                     # write last remaining buffer to disk
                     if len(self.STATE.buffer) > 0:
-                        print("log the last remaining buffer...")
-                        print(
+                        logging.debug("log the last remaining buffer...")
+                        logging.debug(
                             t_generation,
                             len(self.STATE.buffer),
                             f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
@@ -103,7 +104,7 @@ class LSLInletUnit(ez.Unit):
                     t_offset = self.STATE.inlet.time_correction()
 
                     if self.SETTINGS.window_size == 1:
-                        print(t_generation, sample)
+                        logging.debug(t_generation, sample)
                         log_line = f"{t_generation},{t_offset},{t_arrival},{sample}\n"
 
                         yield (self.OUTPUT, log_line)
@@ -122,7 +123,7 @@ class LSLInletUnit(ez.Unit):
 
                             yield (self.OUTPUT, log_line)
 
-                            print(
+                            logging.debug(
                                 t_generation,
                                 len(self.STATE.buffer),
                                 f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
