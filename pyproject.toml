@@ -19,6 +19,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "basedpyright>=1.31.7",
     "ruff>=0.14.0",
-    "ty>=0.0.1a21",
 ]
+
+[tool.basedpyright]
+typeCheckingMode = "basic"
