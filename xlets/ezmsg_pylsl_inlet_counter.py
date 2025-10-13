@@ -198,7 +198,7 @@ def main(
     fs: int, mp: bool, ws: int, datatype: str, platform: str, verbose: bool, id: int
 ):
     if not verbose:
-        sys.stdout = open(os.devnull, "w")
+        sys.stdout = open(os.devnull if os.name != "nt" else "nul", "w")
 
     file_name = Path(
         f"./logs/id-{id}_inlet-ezmsgpylsl_datatype-{datatype}_platform-{platform}_multiproc-{str(mp)}_fs-{fs}_window-{ws}.csv"
