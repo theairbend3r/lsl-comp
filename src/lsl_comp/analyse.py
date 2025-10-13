@@ -174,9 +174,9 @@ for run_id in run_ids:
             **{
                 "is_data_loss": is_data_loss,
                 "avg_window_duration": avg_window_duration,
-                "std_window_duration": avg_window_duration,
+                "std_window_duration": std_window_duration,
                 "avg_latency": avg_latency,
-                "std_latency": avg_latency,
+                "std_latency": std_latency,
             },
         }
     )
