@@ -29,6 +29,9 @@ def main(
     verbose: bool,
     id: int,
 ):
+    if datatype != "counter":
+        raise ValueError("Incompatible datatype.")
+
     if not verbose:
         sys.stdout = open(os.devnull if os.name != "nt" else "nul", "w")
 

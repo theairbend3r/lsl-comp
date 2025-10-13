@@ -21,6 +21,9 @@ from collections import deque
 def main(
     fs: int, mp: bool, ws: int, datatype: str, platform: str, verbose: bool, id: int
 ):
+    if datatype not in ["counter", "airsignal"]:
+        raise ValueError("Incompatible datatype.")
+
     if not verbose:
         sys.stdout = open(os.devnull if os.name != "nt" else "nul", "w")
 

@@ -8,12 +8,12 @@ from typing import NamedTuple
 import click
 
 outlet_to_script = {
-    "ezmsg_pylsl": Path("./xlets/ezmsg_pylsl_outlet_counter.py"),
-    "pylsl": Path("./xlets/pylsl_outlet_counter.py"),
+    "ezmsg_pylsl": Path(".src/lsl_comp/xlets/ezmsgpylsl_outlet.py"),
+    "pylsl": Path(".src/lsl_comp/xlets/pylsl_outlet.py"),
 }
 inlet_to_script = {
-    "ezmsg_pylsl": Path("./xlets/ezmsg_pylsl_inlet_counter.py"),
-    "pylsl": Path("./xlets/pylsl_inlet_counter.py"),
+    "ezmsg_pylsl": Path("./src/lsl_comp/xlets/ezmsgpylsl_inlet.py"),
+    "pylsl": Path("./src/lsl_comp/xlets/pylsl_inlet.py"),
 }
 
 
