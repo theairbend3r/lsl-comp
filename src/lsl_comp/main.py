@@ -1,4 +1,5 @@
 import logging
+import platform
 import time
 import itertools
 import subprocess
@@ -20,7 +21,14 @@ inlet_to_script = {
 
 def run_script(script_name: str, args: list[str]):
     try:
-        _ = subprocess.run(["python", script_name] + args, check=True)
+        if platform.system() == "Windows":
+            _ = subprocess.run(
+                ["python", script_name] + args,
+                check=True,
+                executable=r"C:\Users\ribs\proejcts\lsl-comp\.venv\Scripts\python.exe",
+            )
+        else:
+            _ = subprocess.run(["python", script_name] + args, check=True)
     except subprocess.CalledProcessError as e:
         logging.error(f"Error occurred while running {script_name}: {e}")
 
