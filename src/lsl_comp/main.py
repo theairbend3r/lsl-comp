@@ -25,7 +25,7 @@ def run_script(script_name: str, args: list[str]):
             _ = subprocess.run(
                 ["python", script_name] + args,
                 check=True,
-                executable=r"C:\Users\ribs\proejcts\lsl-comp\.venv\Scripts\python.exe",
+                executable=r".venv\Scripts\python.exe",
             )
         else:
             _ = subprocess.run(["python", script_name] + args, check=True)
