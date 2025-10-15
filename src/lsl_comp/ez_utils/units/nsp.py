@@ -1,6 +1,5 @@
 from collections.abc import AsyncGenerator
 
-import pylsl
 import ezmsg.core as ez
 from ezmsg.util.messages.axisarray import AxisArray
 
@@ -33,7 +32,7 @@ class NSPExtractorUnit(ez.Unit):
         if self.STATE.current_count >= self.SETTINGS.tc:
             yield (
                 self.OUTPUT,
-                Message(samples=[-1.0], timestamp=[99.99]),
+                Message(samples=[-1.0], timestamps=[99.99]),
             )
             raise ez.Complete
         else:
@@ -52,7 +51,7 @@ class NSPExtractorUnit(ez.Unit):
 
             yield (
                 self.OUTPUT,
-                Message(samples=samples, timestamp=timestamps),
+                Message(samples=samples, timestamps=timestamps),
             )
 
             self.STATE.current_count += num_samples
