@@ -8,7 +8,7 @@ from ezmsg.blackrock.nsp import NSPSource, NSPSourceSettings
 
 
 from lsl_comp.utils.pylogger import logger_creator
-from lsl_comp.ez_utils.units.nsp import NSPExtractorUnit
+from lsl_comp.ez_utils.units.nsp import NSPExtractorSettings, NSPExtractorUnit
 from lsl_comp.ez_utils.units.log import LogOutletSettings, LogOutletUnit
 from lsl_comp.ez_utils.units.count import CountSettings, CountUnit
 from lsl_comp.ez_utils.units.lsl import LSLOutletSettings, LSLOutletUnit
@@ -92,6 +92,7 @@ class AirsignalSystem(ez.Collection):
                 cbtime=False,
             )
         )
+        self.EXT.apply_settings(NSPExtractorSettings(tc=self.SETTINGS.total_count))
         self.OUTLET.apply_settings(
             (
                 LSLOutletSettings(
