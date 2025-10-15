@@ -8,7 +8,9 @@ from typing import NamedTuple
 
 import click
 
-from lsl_comp.utils.pylogger import logger
+from lsl_comp.utils.pylogger import logger_creator
+
+logger = logger_creator(verbose=True)
 
 outlet_to_script = {
     "ezmsg_pylsl": Path("./src/lsl_comp/xlets/ezmsgpylsl_outlet.py"),

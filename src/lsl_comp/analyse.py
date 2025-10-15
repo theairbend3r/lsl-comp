@@ -3,7 +3,9 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from lsl_comp.utils.pylogger import logger
+from lsl_comp.utils.pylogger import logger_creator
+
+logger = logger_creator(verbose=True)
 
 
 # ====== helper functions =================
