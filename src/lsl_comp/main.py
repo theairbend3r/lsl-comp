@@ -90,7 +90,7 @@ def main(platform: str, datatype: str) -> None:
 
     for i, c in enumerate(combos):
         logger.debug("=" * 50)
-        logger.debug("\n", i, c, "\n")
+        logger.debug(("\n", i, c, "\n"))
 
         log_file_outlet = outlet_to_script[c.outlet]
         log_file_inlet = inlet_to_script[c.inlet]
@@ -100,8 +100,8 @@ def main(platform: str, datatype: str) -> None:
         mp = c.multiproc
         ws = c.window_size
 
-        logger.debug(c.outlet, log_file_outlet)
-        logger.debug(c.inlet, log_file_inlet)
+        logger.debug((c.outlet, log_file_outlet))
+        logger.debug((c.inlet, log_file_inlet))
 
         process_outlet = multiprocessing.Process(
             target=run_script,
@@ -128,7 +128,6 @@ def main(platform: str, datatype: str) -> None:
         process_outlet.join()
         process_inlet.join()
 
-        logger.debug("=" * 50)
         time.sleep(1)
 
 
