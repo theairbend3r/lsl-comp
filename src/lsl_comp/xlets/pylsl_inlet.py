@@ -1,10 +1,10 @@
-import logging
-import os
-import sys
-import click
-import pylsl
 from pathlib import Path
 from collections import deque
+
+import pylsl
+import click
+
+from lsl_comp.utils.pylogger import logger_creator
 
 
 @click.command()
@@ -25,8 +25,7 @@ def main(
     if datatype not in ["counter", "airsignal"]:
         raise ValueError("Incompatible datatype.")
 
-    if not verbose:
-        sys.stdout = open(os.devnull if os.name != "nt" else "nul", "w")
+    logger = logger_creator(verbose)
 
     file_name = Path(
         f"./logs/id-{id}_inlet-pylsl_datatype-{datatype}_platform-{platform}_multiproc-{str(mp)}_fs-{fs}_window-{ws}.csv"
@@ -70,7 +69,7 @@ def main(
             t_offset, t_arrival = inlet.time_correction(), pylsl.local_clock()
 
             if window_size == 1:
-                logging.debug("[pylsl-inlet] ", t_gen_outlet, sample)
+                logger.debug(("[pylsl-inlet] ", t_gen_outlet, sample))
                 file.write(f"{t_gen_outlet},{t_offset},{t_arrival},{sample}\n")
             else:
                 buffer.append((t_gen_outlet, t_offset, t_arrival, sample))
@@ -82,21 +81,21 @@ def main(
 
                     file.write(log_line)
 
-                    logging.debug("[pylsl-inlet] ", t_gen_outlet, len(buffer))
+                    logger.debug(("[pylsl-inlet] ", t_gen_outlet, len(buffer)))
 
                     buffer.clear()
 
     # write last remaining buffer to disk
     # if last buffer is less than the window_size, then it is never written to disk
     if window_size > 1 and len(buffer) > 0:
-        logging.debug("log the last remaining buffer...")
+        logger.debug("log the last remaining buffer...")
         log_line = [";".join((str(e) for e in b)) for b in list(zip(*buffer))]
         log_line = ",".join(log_line) + "\n"
 
-        logging.debug("[pylsl-inlet]", t_gen_outlet, len(buffer))
+        logger.debug(("[pylsl-inlet]", t_gen_outlet, len(buffer)))
         file.write(log_line)
 
-    logging.info("closing inlet and writing logs to disk...")
+    logger.info("closing inlet and writing logs to disk...")
     inlet.close_stream()
     file.flush()
     file.close()

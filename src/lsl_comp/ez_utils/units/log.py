@@ -9,6 +9,7 @@ from lsl_comp.ez_utils.message import Message
 
 class LogOutletSettings(ez.Settings):
     log_file_name: Path
+    logger: logging.Logger
 
 
 class LogOutletState(ez.State):
@@ -35,10 +36,10 @@ class LogOutletUnit(ez.Unit):
     async def on_message(self, message: Message) -> None:
         sample, timestamp = message.sample, message.timestamp
 
-        logging.debug(timestamp, sample)
+        self.SETTINGS.logger.debug((timestamp, sample))
 
         if sample == -1:
-            logging.info("closing outlet and writing logs to disk...")
+            self.SETTINGS.logger.info("closing outlet and writing logs to disk...")
             self.STATE.file.flush()
             self.STATE.file.close()
 
@@ -54,6 +55,7 @@ class LogOutletUnit(ez.Unit):
 class LogInletSettings(ez.Settings):
     window_size: int
     log_file_name: Path
+    logger: logging.Logger
 
 
 class LogInletState(ez.State):
@@ -82,7 +84,7 @@ class LogInletUnit(ez.Unit):
     @ez.subscriber(INPUT)
     async def on_message(self, message: str) -> None:
         if message == "-1.0":
-            logging.info("closing inlet and writing logs to disk...")
+            self.SETTINGS.logger.info("closing inlet and writing logs to disk...")
             self.STATE.file.flush()
             self.STATE.file.close()
 

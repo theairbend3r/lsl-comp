@@ -1,5 +1,5 @@
-import os
 import sys
+import logging
 from pathlib import Path
 
 import click
@@ -7,6 +7,7 @@ import ezmsg.core as ez
 from ezmsg.blackrock.nsp import NSPSource, NSPSourceSettings
 
 
+from lsl_comp.utils.pylogger import logger_creator
 from lsl_comp.ez_utils.units.nsp import NSPExtractorUnit
 from lsl_comp.ez_utils.units.log import LogOutletSettings, LogOutletUnit
 from lsl_comp.ez_utils.units.count import CountSettings, CountUnit
@@ -22,6 +23,7 @@ class SystemSettings(ez.Settings):
     multiproc: bool
     log_file_name: Path
     stream_name: str
+    logger: logging.Logger
 
 
 # ==================================================================
@@ -47,7 +49,9 @@ class CountSystem(ez.Collection):
             )
         )
         self.LOG.apply_settings(
-            LogOutletSettings(log_file_name=self.SETTINGS.log_file_name)
+            LogOutletSettings(
+                log_file_name=self.SETTINGS.log_file_name, logger=self.SETTINGS.logger
+            )
         )
 
     def network(self) -> ez.NetworkDefinition:
@@ -96,7 +100,9 @@ class AirsignalSystem(ez.Collection):
             )
         )
         self.LOG.apply_settings(
-            LogOutletSettings(log_file_name=self.SETTINGS.log_file_name)
+            LogOutletSettings(
+                log_file_name=self.SETTINGS.log_file_name, logger=self.SETTINGS.logger
+            )
         )
 
     def network(self) -> ez.NetworkDefinition:
@@ -139,8 +145,7 @@ def main(
     verbose: bool,
     id: int,
 ):
-    if not verbose:
-        sys.stdout = open(os.devnull if os.name != "nt" else "nul", "w")
+    logger = logger_creator(verbose)
 
     file_name = Path(
         f"./logs/id-{id}_outlet-ezmsgpylsl_datatype-{datatype}_platform-{platform}_multiproc-{str(mp)}_fs-{fs}_window-{ws}.csv"
@@ -153,6 +158,7 @@ def main(
         multiproc=mp,
         log_file_name=file_name,
         stream_name=datatype,
+        logger=logger,
     )
 
     if datatype == "counter":

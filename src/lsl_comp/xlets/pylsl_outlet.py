@@ -1,10 +1,10 @@
-import logging
-import os
-import sys
 import time
+from pathlib import Path
+
 import pylsl
 import click
-from pathlib import Path
+
+from lsl_comp.utils.pylogger import logger_creator
 
 
 @click.command()
@@ -33,8 +33,7 @@ def main(
     if datatype != "counter":
         raise ValueError("Incompatible datatype.")
 
-    if not verbose:
-        sys.stdout = open(os.devnull if os.name != "nt" else "nul", "w")
+    logger = logger_creator(verbose)
 
     file_name = Path(
         f"./logs/id-{id}_outlet-pylsl_datatype-{datatype}_platform-{platform}_multiproc-{str(mp)}_fs-{fs}_window-{ws}.csv"
@@ -67,21 +66,21 @@ def main(
         elapsed_time = pylsl.local_clock() - start_time
         required_samples = int(fs * elapsed_time) - sent_samples
 
-        for sample_ix in range(required_samples):
+        for _ in range(required_samples):
             mysample = [n]
             curr_time = pylsl.local_clock()
             outlet.push_sample(mysample, curr_time)
 
             file.write(f"{curr_time},{n}\n")
-            logging.debug(
-                "[pylsl-outlet] ", curr_time - start_time, curr_time, mysample
+            logger.debug(
+                ("[pylsl-outlet] ", curr_time - start_time, curr_time, mysample)
             )
             n += 1
 
         sent_samples += required_samples
         time.sleep(1 / fs)
 
-    logging.info("closing outlet and writing logs to disk...")
+    logger.info("closing outlet and writing logs to disk...")
     outlet.push_sample([-1], pylsl.local_clock())
     file.flush()
     file.close()

@@ -1,6 +1,5 @@
-import logging
-import platform
 import time
+import platform
 import itertools
 import subprocess
 import multiprocessing
@@ -8,6 +7,8 @@ from pathlib import Path
 from typing import NamedTuple
 
 import click
+
+from lsl_comp.utils.pylogger import logger
 
 outlet_to_script = {
     "ezmsg_pylsl": Path("./src/lsl_comp/xlets/ezmsgpylsl_outlet.py"),
@@ -30,7 +31,7 @@ def run_script(script_name: str, args: list[str]):
         else:
             _ = subprocess.run(["python", script_name] + args, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error(f"Error occurred while running {script_name}: {e}")
+        logger.error(f"Error occurred while running {script_name}: {e}")
 
 
 class Combo(NamedTuple):
@@ -74,7 +75,7 @@ def main(platform: str, datatype: str) -> None:
         )
     )
 
-    logging.info(f"\nTotal combos = {len(combos)}\n")
+    logger.info(f"\nTotal combos = {len(combos)}\n")
     combos = [Combo(*c) for c in combos]
 
     # ignore multiprocessing where either the inlet or outlet is pure pylsl
@@ -83,11 +84,11 @@ def main(platform: str, datatype: str) -> None:
         for c in combos
         if not ((c.outlet == "pylsl" or c.inlet == "pylsl") and c.multiproc)
     ]
-    logging.info(f"\nValid combos = {len(combos)}\n")
+    logger.info(f"\nValid combos = {len(combos)}\n")
 
     for i, c in enumerate(combos):
-        logging.debug("=" * 50)
-        logging.debug("\n", i, c, "\n")
+        logger.debug("=" * 50)
+        logger.debug("\n", i, c, "\n")
 
         log_file_outlet = outlet_to_script[c.outlet]
         log_file_inlet = inlet_to_script[c.inlet]
@@ -97,8 +98,8 @@ def main(platform: str, datatype: str) -> None:
         mp = c.multiproc
         ws = c.window_size
 
-        logging.debug(c.outlet, log_file_outlet)
-        logging.debug(c.inlet, log_file_inlet)
+        logger.debug(c.outlet, log_file_outlet)
+        logger.debug(c.inlet, log_file_inlet)
 
         process_outlet = multiprocessing.Process(
             target=run_script,
@@ -125,7 +126,7 @@ def main(platform: str, datatype: str) -> None:
         process_outlet.join()
         process_inlet.join()
 
-        logging.debug("=" * 50)
+        logger.debug("=" * 50)
         time.sleep(1)
 
 

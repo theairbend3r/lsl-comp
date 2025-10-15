@@ -48,6 +48,7 @@ class LSLInletSettings(ez.Settings):
     fs: int
     window_size: int
     stream_name: str
+    logger: logging.Logger
 
 
 class LSLInletState(ez.State):
@@ -78,11 +79,13 @@ class LSLInletUnit(ez.Unit):
                 if sample == -1:
                     # write last remaining buffer to disk
                     if len(self.STATE.buffer) > 0:
-                        logging.debug("log the last remaining buffer...")
-                        logging.debug(
-                            t_generation,
-                            len(self.STATE.buffer),
-                            f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
+                        self.SETTINGS.logger.debug("log the last remaining buffer...")
+                        self.SETTINGS.logger.debug(
+                            (
+                                t_generation,
+                                len(self.STATE.buffer),
+                                f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
+                            )
                         )
 
                         log_line = [
@@ -104,7 +107,7 @@ class LSLInletUnit(ez.Unit):
                     t_offset = self.STATE.inlet.time_correction()
 
                     if self.SETTINGS.window_size == 1:
-                        logging.debug(t_generation, sample)
+                        self.SETTINGS.logger.debug((t_generation, sample))
                         log_line = f"{t_generation},{t_offset},{t_arrival},{sample}\n"
 
                         yield (self.OUTPUT, log_line)
@@ -123,9 +126,11 @@ class LSLInletUnit(ez.Unit):
 
                             yield (self.OUTPUT, log_line)
 
-                            logging.debug(
-                                t_generation,
-                                len(self.STATE.buffer),
-                                f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
+                            self.SETTINGS.logger.debug(
+                                (
+                                    t_generation,
+                                    len(self.STATE.buffer),
+                                    f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
+                                )
                             )
                             self.STATE.buffer.clear()

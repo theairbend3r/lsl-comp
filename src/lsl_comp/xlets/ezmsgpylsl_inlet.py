@@ -1,10 +1,10 @@
-import os
-import sys
+import logging
 from pathlib import Path
 
 import click
 import ezmsg.core as ez
 
+from lsl_comp.utils.pylogger import logger_creator
 from lsl_comp.ez_utils.units.log import LogInletSettings, LogInletUnit
 from lsl_comp.ez_utils.units.lsl import LSLInletSettings, LSLInletUnit
 
@@ -15,6 +15,7 @@ class SystemSettings(ez.Settings):
     multiproc: bool
     log_file_name: Path
     stream_name: str
+    logger: logging.Logger
 
 
 class System(ez.Collection):
@@ -30,6 +31,7 @@ class System(ez.Collection):
                     fs=self.SETTINGS.fs,
                     window_size=self.SETTINGS.window_size,
                     stream_name=self.SETTINGS.stream_name,
+                    logger=self.SETTINGS.logger,
                 )
             )
         )
@@ -38,6 +40,7 @@ class System(ez.Collection):
             LogInletSettings(
                 log_file_name=self.SETTINGS.log_file_name,
                 window_size=self.SETTINGS.window_size,
+                logger=self.SETTINGS.logger,
             )
         )
 
@@ -66,8 +69,7 @@ class System(ez.Collection):
 def main(
     fs: int, mp: bool, ws: int, datatype: str, platform: str, verbose: bool, id: int
 ):
-    if not verbose:
-        sys.stdout = open(os.devnull if os.name != "nt" else "nul", "w")
+    logger = logger_creator(verbose)
 
     file_name = Path(
         f"./logs/id-{id}_inlet-ezmsgpylsl_datatype-{datatype}_platform-{platform}_multiproc-{str(mp)}_fs-{fs}_window-{ws}.csv"
@@ -80,6 +82,7 @@ def main(
         multiproc=mp,
         log_file_name=file_name,
         stream_name=datatype,
+        logger=logger,
     )
     system = System(settings)
     ez.run({"system": system})

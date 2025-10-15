@@ -1,8 +1,9 @@
-import logging
 from pathlib import Path
 
 import numpy as np
 import polars as pl
+
+from lsl_comp.utils.pylogger import logger
 
 
 # ====== helper functions =================
@@ -84,7 +85,7 @@ def verify_data_loss(
     try:
         return not all(inlet_number_arr == outlet_number_subset)
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
         return True
 
 
