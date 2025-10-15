@@ -36,10 +36,10 @@ class LSLOutletUnit(ez.Unit):
 
     @ez.subscriber(INPUT)
     async def outlet(self, message: Message) -> None:
-        sample, timestamp = message.sample, message.timestamp
-        self.STATE.outlet.push_sample([sample], timestamp)
+        samples, timestamps = message.samples, message.timestamps
+        self.STATE.outlet.push_sample([samples], timestamps)
 
-        if sample == -1:
+        if samples == [-1.0]:
             raise ez.Complete
 
 

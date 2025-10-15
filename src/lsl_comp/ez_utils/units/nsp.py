@@ -45,8 +45,8 @@ class NSPExtractorUnit(ez.Unit):
             # extract timestamps received from hardware
             # WARN: maybe we should pylsl.local_clock() as the first timestamp
             # instead of reading it from the machine so it can be related back to markers timestamps
-            gain: float = message.axes["time"].gain
-            first_timestamp: float = message.axes["time"].offset
+            gain: float = message.axes["time"].gain.item()
+            first_timestamp: float = message.axes["time"].offset.item()
             timestamps = [(first_timestamp + i * gain) for i in range(num_samples)]
 
             yield (
