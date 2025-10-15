@@ -20,11 +20,13 @@ class NSPExtractorUnit(ez.Unit):
     STATE = NSPExtractorState
 
     INPUT = ez.InputStream(AxisArray)
-    OUTPUT = ez.InputStream(Message)
+    OUTPUT = ez.OutputStream(Message)
 
     def initialize(self) -> None:
         self.STATE.current_count = 0
 
+    @ez.subscriber(INPUT)
+    @ez.publisher(OUTPUT)
     async def extract(self, message: AxisArray) -> AsyncGenerator:
         if self.STATE.current_count >= self.SETTINGS.tc:
             yield (
