@@ -93,6 +93,7 @@ class AirsignalSystem(ez.Collection):
             )
         )
         self.EXT.apply_settings(NSPExtractorSettings(tc=self.SETTINGS.total_count))
+
         self.OUTLET.apply_settings(
             (
                 LSLOutletSettings(

@@ -28,16 +28,31 @@ class NSPExtractorUnit(ez.Unit):
     @ez.subscriber(INPUT)
     @ez.publisher(OUTPUT)
     async def extract(self, message: AxisArray) -> AsyncGenerator:
+        # NSPSource() returns a numpy array of shape (time, channels)
+
         if self.STATE.current_count >= self.SETTINGS.tc:
             yield (
                 self.OUTPUT,
-                Message(sample=-1, timestamp=pylsl.local_clock()),
+                Message(samples=[-1.0], timestamp=[99.99]),
             )
             raise ez.Complete
         else:
-            sample = message.data[:, 1].item()
+            # extract values from 2nd channel (index = 1) for all timesteps
+            samples: list[float] = message.data[:, 1].tolist()
+
+            # how many samples were actually received in a single message
+            num_samples = len(samples)
+
+            # extract timestamps received from hardware
+            # WARN: maybe we should pylsl.local_clock() as the first timestamp
+            # instead of reading it from the machine so it can be related back to markers timestamps
+            gain: float = message.axes["time"].gain
+            first_timestamp: float = message.axes["time"].offset
+            timestamps = [(first_timestamp + i * gain) for i in range(num_samples)]
+
             yield (
                 self.OUTPUT,
-                Message(sample=sample, timestamp=pylsl.local_clock()),
+                Message(samples=samples, timestamp=timestamps),
             )
-            self.STATE.current_count += 1
+
+            self.STATE.current_count += num_samples

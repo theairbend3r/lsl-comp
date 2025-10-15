@@ -34,11 +34,11 @@ class LogOutletUnit(ez.Unit):
 
     @ez.subscriber(INPUT)
     async def on_message(self, message: Message) -> None:
-        sample, timestamp = message.sample, message.timestamp
+        samples, timestamps = message.samples, message.timestamps
 
-        self.SETTINGS.logger.debug((timestamp, sample))
+        self.SETTINGS.logger.debug((timestamps, samples))
 
-        if sample == -1:
+        if samples == [-1.0]:
             self.SETTINGS.logger.info("closing outlet and writing logs to disk...")
             self.STATE.file.flush()
             self.STATE.file.close()
@@ -46,7 +46,8 @@ class LogOutletUnit(ez.Unit):
             raise ez.Complete
 
         else:
-            self.STATE.file.write(f"{timestamp},{sample}\n")
+            for t, s in zip(timestamps, samples):
+                self.STATE.file.write(f"{t},{s}\n")
 
 
 # ==================================================================
