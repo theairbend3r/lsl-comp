@@ -37,7 +37,6 @@ class LSLOutletUnit(ez.Unit):
     @ez.subscriber(INPUT)
     async def outlet(self, message: Message) -> None:
         samples, timestamps = message.samples, message.timestamps
-        # self.STATE.outlet.push_sample(samples, timestamps)
         self.STATE.outlet.push_chunk(samples, timestamps)
 
         if samples == [-1.0]:
@@ -71,65 +70,73 @@ class LSLInletUnit(ez.Unit):
     @ez.publisher(OUTPUT)
     async def inlet(self) -> AsyncGenerator:
         while True:
-            sample, t_generation = self.STATE.inlet.pull_sample()
+            samples, t_outlet = self.STATE.inlet.pull_chunk()
+            print(t_outlet, samples)
+            yield (self.OUTPUT, "asdasd")
 
-            if sample and t_generation:
-                # [-1.0] sent after the last sample to gracefully close stream
-                if sample == [-1.0]:
-                    # # write last remaining buffer to disk
-                    # if len(self.STATE.buffer) > 0:
-                    #     self.SETTINGS.logger.debug("log the last remaining buffer...")
-                    #     self.SETTINGS.logger.debug(
-                    #         (
-                    #             t_generation,
-                    #             len(self.STATE.buffer),
-                    #             f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
-                    #         )
-                    #     )
-                    #
-                    #     log_line = [
-                    #         ";".join((str(e) for e in b))
-                    #         for b in list(zip(*self.STATE.buffer))
-                    #     ]
-                    #     log_line = ",".join(log_line) + "\n"
-                    #
-                    #     yield (self.OUTPUT, log_line)
-                    #
-                    # # send the last -1 to stop downstream units
-                    # yield (self.OUTPUT, str(sample))
-
-                    self.STATE.inlet.close_stream()
-                    raise ez.Complete
-
-                else:
-                    t_arrival = pylsl.local_clock()
-                    t_offset = self.STATE.inlet.time_correction()
-
-                    if self.SETTINGS.window_size == 1:
-                        self.SETTINGS.logger.debug((t_generation, sample))
-                        log_line = f"{t_generation},{t_offset},{t_arrival},{sample}\n"
-
-                        yield (self.OUTPUT, log_line)
-
-                    else:
-                        self.STATE.buffer.append(
-                            (t_generation, t_offset, t_arrival, sample)
-                        )
-
-                        if len(self.STATE.buffer) == self.SETTINGS.window_size:
-                            log_line = [
-                                ";".join((str(e) for e in b))
-                                for b in list(zip(*self.STATE.buffer))
-                            ]
-                            log_line = ",".join(log_line) + "\n"
-
-                            yield (self.OUTPUT, log_line)
-
-                            self.SETTINGS.logger.debug(
-                                (
-                                    t_generation,
-                                    len(self.STATE.buffer),
-                                    f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
-                                )
-                            )
-                            self.STATE.buffer.clear()
+            # if sample and t_outlet:
+            #     # [-1.0] sent after the last sample to gracefully close stream
+            #     if sample == [-1.0]:
+            #         # # write last remaining buffer to disk
+            #         # if len(self.STATE.buffer) > 0:
+            #         #     self.SETTINGS.logger.debug("log the last remaining buffer...")
+            #         #     self.SETTINGS.logger.debug(
+            #         #         (
+            #         #             t_generation,
+            #         #             len(self.STATE.buffer),
+            #         #             f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
+            #         #         )
+            #         #     )
+            #         #
+            #         #     log_line = [
+            #         #         ";".join((str(e) for e in b))
+            #         #         for b in list(zip(*self.STATE.buffer))
+            #         #     ]
+            #         #     log_line = ",".join(log_line) + "\n"
+            #         #
+            #         #     yield (self.OUTPUT, log_line)
+            #         #
+            #         # # send the last -1 to stop downstream units
+            #         # yield (self.OUTPUT, str(sample))
+            #
+            #         self.SETTINGS.logger.debug("Closing inlet.")
+            #         self.STATE.inlet.close_stream()
+            #         raise ez.Complete
+            #
+            #     else:
+            #         t_arrival = pylsl.local_clock()
+            #         t_offset = self.STATE.inlet.time_correction()
+            #
+            #         if self.SETTINGS.window_size == 0:
+            #             self.SETTINGS.logger.debug((t_outlet, sample))
+            #             log_line = f"{t_outlet},{t_offset},{t_arrival},{sample}\n"
+            #
+            #             yield (self.OUTPUT, log_line)
+            #         elif self.SETTINGS.window_size == 1:
+            #             self.SETTINGS.logger.debug((t_outlet, sample))
+            #             log_line = f"{t_outlet},{t_offset},{t_arrival},{sample}\n"
+            #
+            #             yield (self.OUTPUT, log_line)
+            #
+            #         else:
+            #             self.STATE.buffer.append(
+            #                 (t_outlet, t_offset, t_arrival, sample)
+            #             )
+            #
+            #             if len(self.STATE.buffer) == self.SETTINGS.window_size:
+            #                 log_line = [
+            #                     ";".join((str(e) for e in b))
+            #                     for b in list(zip(*self.STATE.buffer))
+            #                 ]
+            #                 log_line = ",".join(log_line) + "\n"
+            #
+            #                 yield (self.OUTPUT, log_line)
+            #
+            #                 self.SETTINGS.logger.debug(
+            #                     (
+            #                         t_outlet,
+            #                         len(self.STATE.buffer),
+            #                         f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
+            #                     )
+            #                 )
+            #                 self.STATE.buffer.clear()
