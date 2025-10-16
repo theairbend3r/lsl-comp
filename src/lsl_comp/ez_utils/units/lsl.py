@@ -89,7 +89,7 @@ class LSLInletUnit(ez.Unit):
                     # match self.SETTINGS.window_size:
                     if self.SETTINGS.window_size == 0:
                         self.SETTINGS.logger.debug(
-                            (len(samples), f"{samples[0]}...{samples[0][-1]}")
+                            (len(samples), f"{samples[0]}...{samples[-1]}")
                         )
                         log_line = f"{';'.join([str(t) for t in t_outlets])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
 
