@@ -88,6 +88,7 @@ class LogInletUnit(ez.Unit):
 
     @ez.subscriber(INPUT)
     async def on_message(self, message: str) -> None:
+        print(message)
         if message == "-1.0":
             self.SETTINGS.logger.info("Writing logs to disk...")
             self.STATE.file.flush()
