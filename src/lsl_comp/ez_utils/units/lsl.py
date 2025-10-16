@@ -73,31 +73,29 @@ class LSLInletUnit(ez.Unit):
             sample, t_generation = self.STATE.inlet.pull_sample()
 
             if sample and t_generation:
-                sample = sample[0]
-
-                # -1 sent after the last sample to gracefully close stream
-                if sample == -1:
-                    # write last remaining buffer to disk
-                    if len(self.STATE.buffer) > 0:
-                        self.SETTINGS.logger.debug("log the last remaining buffer...")
-                        self.SETTINGS.logger.debug(
-                            (
-                                t_generation,
-                                len(self.STATE.buffer),
-                                f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
-                            )
-                        )
-
-                        log_line = [
-                            ";".join((str(e) for e in b))
-                            for b in list(zip(*self.STATE.buffer))
-                        ]
-                        log_line = ",".join(log_line) + "\n"
-
-                        yield (self.OUTPUT, log_line)
-
-                    # send the last -1 to stop downstream units
-                    yield (self.OUTPUT, str(sample))
+                # [-1.0] sent after the last sample to gracefully close stream
+                if sample == [-1.0]:
+                    # # write last remaining buffer to disk
+                    # if len(self.STATE.buffer) > 0:
+                    #     self.SETTINGS.logger.debug("log the last remaining buffer...")
+                    #     self.SETTINGS.logger.debug(
+                    #         (
+                    #             t_generation,
+                    #             len(self.STATE.buffer),
+                    #             f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
+                    #         )
+                    #     )
+                    #
+                    #     log_line = [
+                    #         ";".join((str(e) for e in b))
+                    #         for b in list(zip(*self.STATE.buffer))
+                    #     ]
+                    #     log_line = ",".join(log_line) + "\n"
+                    #
+                    #     yield (self.OUTPUT, log_line)
+                    #
+                    # # send the last -1 to stop downstream units
+                    # yield (self.OUTPUT, str(sample))
 
                     self.STATE.inlet.close_stream()
                     raise ez.Complete
