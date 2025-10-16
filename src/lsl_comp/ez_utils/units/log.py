@@ -52,6 +52,7 @@ class LogOutletUnit(ez.Unit):
             # file.write(line)
             for t, s in zip(timestamps, samples):
                 self.STATE.file.write(f"{t},{s}\n")
+                self.STATE.file.flush()
 
 
 # ==================================================================

@@ -5,8 +5,8 @@ import click
 import ezmsg.core as ez
 from ezmsg.lsl.units import LSLInletUnit, LSLInletSettings, LSLInfo
 
-from lsl_comp.ez_utils.units.extractor import AxisArrayExtractorUnit
 from lsl_comp.utils.pylogger import logger_creator
+from lsl_comp.ez_utils.units.extractor import AxisArrayExtractorUnit
 from lsl_comp.ez_utils.units.log import LogInletSettings, LogInletUnit
 
 
