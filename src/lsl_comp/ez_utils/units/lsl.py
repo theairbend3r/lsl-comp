@@ -88,7 +88,7 @@ class LSLInletUnit(ez.Unit):
 
                     match self.SETTINGS.window_size:
                         case 0:
-                            log_line = f"{';'.join(t_outlets)},{t_lsloffset},{t_inlet},{';'.join(samples)}\n"
+                            log_line = f"{';'.join([str(t) for t in t_outlets])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
                             print(log_line)
                         case 1:
                             pass
