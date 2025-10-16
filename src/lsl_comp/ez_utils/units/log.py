@@ -39,13 +39,17 @@ class LogOutletUnit(ez.Unit):
         self.SETTINGS.logger.debug((timestamps, samples))
 
         if samples == [-1.0]:
-            self.SETTINGS.logger.info("closing outlet and writing logs to disk...")
+            self.SETTINGS.logger.info("Writing logs to disk...")
             self.STATE.file.flush()
             self.STATE.file.close()
 
             raise ez.Complete
 
         else:
+            # NOTE: a more efficient way to do it would be
+            # to perform file.write() only once.
+            # line = "".join(f"{t},{s}\n" for t,s in zip(timestamps, samples))
+            # file.write(line)
             for t, s in zip(timestamps, samples):
                 self.STATE.file.write(f"{t},{s}\n")
 
@@ -85,7 +89,7 @@ class LogInletUnit(ez.Unit):
     @ez.subscriber(INPUT)
     async def on_message(self, message: str) -> None:
         if message == "-1.0":
-            self.SETTINGS.logger.info("closing inlet and writing logs to disk...")
+            self.SETTINGS.logger.info("Writing logs to disk...")
             self.STATE.file.flush()
             self.STATE.file.close()
 

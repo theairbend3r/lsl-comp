@@ -44,7 +44,9 @@ class CountSystem(ez.Collection):
         self.OUTLET.apply_settings(
             (
                 LSLOutletSettings(
-                    fs=self.SETTINGS.fs, stream_name=self.SETTINGS.stream_name
+                    fs=self.SETTINGS.fs,
+                    stream_name=self.SETTINGS.stream_name,
+                    logger=self.SETTINGS.logger,
                 )
             )
         )

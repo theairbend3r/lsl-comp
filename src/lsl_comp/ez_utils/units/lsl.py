@@ -13,6 +13,7 @@ from lsl_comp.ez_utils.message import Message
 class LSLOutletSettings(ez.Settings):
     fs: int
     stream_name: str
+    logger: logging.Logger
 
 
 class LSLOutletState(ez.State):
@@ -41,6 +42,7 @@ class LSLOutletUnit(ez.Unit):
         self.STATE.outlet.push_chunk(samples, timestamps)
 
         if samples == [-1.0]:
+            self.SETTINGS.logger.info("Closing outlet.")
             raise ez.Complete
 
 
@@ -92,6 +94,7 @@ class LSLInletUnit(ez.Unit):
                 # [-1.0] sent after the last sample to gracefully close stream
                 if samples == [-1.0]:
                     if len(self.STATE.buffer) > 0:
+                        self.SETTINGS.logger.info("Log last remaining buffer.")
                         self.buffer_print(self.STATE.buffer, self.SETTINGS.logger)
                         log_line = self.buffer_to_string(self.STATE.buffer)
                         yield (self.OUTPUT, log_line)
