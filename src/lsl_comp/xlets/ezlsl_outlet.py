@@ -152,7 +152,7 @@ def main(
     logger = logger_creator(verbose)
 
     file_name = Path(
-        f"./logs/id-{id}_outlet-ezmsgpylsl_datatype-{datatype}_platform-{platform}_multiproc-{str(mp)}_fs-{fs}_window-{ws}.csv"
+        f"./logs/id-{id}_outlet-ezlsl_datatype-{datatype}_platform-{platform}_multiproc-{str(mp)}_fs-{fs}_window-{ws}.csv"
     )
     click.echo(f"Logs: {file_name}")
 
