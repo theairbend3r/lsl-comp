@@ -86,14 +86,39 @@ class LSLInletUnit(ez.Unit):
                     t_inlet = pylsl.local_clock()
                     t_lsloffset = self.STATE.inlet.time_correction()
 
-                    match self.SETTINGS.window_size:
-                        case 0:
-                            log_line = f"{';'.join([str(t) for t in t_outlets])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
-                            print(log_line)
-                        case 1:
-                            pass
-                        case _:
-                            pass
+                    # match self.SETTINGS.window_size:
+                    if self.SETTINGS.window_size == 0:
+                        log_line = f"{';'.join([str(t) for t in t_outlets])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
+                        print(log_line)
+                    elif self.SETTINGS.window_size > 0:
+                        self.STATE.buffer.append(
+                            (
+                                t_outlets,
+                                t_lsloffset,
+                                t_inlet,
+                                samples,
+                            )
+                        )
+
+                        if len(self.STATE.buffer) == self.SETTINGS.window_size:
+                            self.SETTINGS.logger.debug(
+                                (
+                                    t_outlets,
+                                    len(self.STATE.buffer),
+                                    f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
+                                )
+                            )
+                            log_line = [
+                                ";".join((str(e) for e in b))
+                                for b in list(zip(*self.STATE.buffer))
+                            ]
+                            log_line = ",".join(log_line) + "\n"
+
+                            yield (self.OUTPUT, log_line)
+
+                            self.STATE.buffer.clear()
+                    else:
+                        raise ValueError("Incorrect window size.")
 
                 #     t_arrival = pylsl.local_clock()
                 #     t_offset = self.STATE.inlet.time_correction()
