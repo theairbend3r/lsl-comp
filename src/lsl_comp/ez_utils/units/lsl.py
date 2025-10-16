@@ -1,5 +1,4 @@
 import logging
-from math import log
 from typing import Any
 from collections import deque
 from collections.abc import AsyncGenerator
@@ -107,7 +106,6 @@ class LSLInletUnit(ez.Unit):
 
                     raise ez.Complete
                 else:
-                    # self.SETTINGS.logger.debug((t_outlets, samples))
                     t_inlet = pylsl.local_clock()
                     t_lsloffset = self.STATE.inlet.time_correction()
 

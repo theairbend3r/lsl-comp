@@ -5,6 +5,7 @@ import click
 import ezmsg.core as ez
 from ezmsg.lsl.units import LSLInletUnit, LSLInletSettings, LSLInfo
 
+from lsl_comp.ez_utils.units.extractor import AxisArrayExtractorUnit
 from lsl_comp.utils.pylogger import logger_creator
 from lsl_comp.ez_utils.units.log import LogInletSettings, LogInletUnit
 
@@ -22,6 +23,7 @@ class System(ez.Collection):
     SETTINGS = SystemSettings
 
     INLET = LSLInletUnit()
+    EXT = AxisArrayExtractorUnit()
     LOG = LogInletUnit()
 
     def configure(self) -> None:
@@ -44,7 +46,13 @@ class System(ez.Collection):
         )
 
     def network(self) -> ez.NetworkDefinition:
-        return ((self.INLET.OUTPUT_SIGNAL, self.LOG.INPUT),)
+        if self.SETTINGS.window_size == 0:
+            return (
+                (self.INLET.OUTPUT_SIGNAL, self.EXT.INPUT),
+                (self.EXT.OUTPUT, self.LOG.INPUT),
+            )
+        else:
+            return ()
 
     def process_components(self) -> tuple[ez.Component, ...]:
         if self.SETTINGS.multiproc:
