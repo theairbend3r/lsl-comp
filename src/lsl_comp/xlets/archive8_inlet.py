@@ -48,39 +48,55 @@ class LSLInletUnit(ez.Unit):
     @ez.publisher(OUTPUT)
     async def inlet(self) -> AsyncGenerator:
         while True:
-            samples, t_outlets = self.STATE.inlet.pull_sample()
-
-            if samples and t_outlets:
-                print(samples, t_outlets)
-                # samples = [s[0] for s in samples]
-                # t_inlet = pylsl.local_clock()
-                # t_lsloffset = self.STATE.inlet.time_correction()
+            chunk, timestamp = self.STATE.inlet.pull_sample()
+            if timestamp:
+                print(chunk)
+                print(chunk[0])
+                print()
+                # time_offset = self.STATE.inlet.time_correction()
+                # timestamp_arrival_inlet = pylsl.local_clock()
+                # self.STATE.buffer.append(
+                #     (chunk[0], timestamp, time_offset, timestamp_arrival_inlet)
+                # )
                 #
-                # # match self.SETTINGS.window_size:
-                # if self.SETTINGS.window_size == 0:
-                #     self.SETTINGS.logger.debug(
-                #         (len(samples), f"{samples[0]}...{samples[-1]}")
-                #     )
-                #     log_line = f"{';'.join([str(t) for t in t_outlets])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
-                #
-                #     yield (self.OUTPUT, log_line)
-                # elif self.SETTINGS.window_size > 0:
-                #     samples_info = [
-                #         (to, t_lsloffset, t_inlet, s)
-                #         for to, s in zip(t_outlets, samples)
-                #     ]
-                #
-                #     self.STATE.buffer.extend(samples_info)
-                #
-                #     if len(self.STATE.buffer) == self.SETTINGS.window_size:
-                #         self.buffer_print(self.STATE.buffer, self.SETTINGS.logger)
-                #         log_line = self.buffer_to_string(self.STATE.buffer)
-                #
-                #         yield (self.OUTPUT, log_line)
-                #
-                #         self.STATE.buffer.clear()
-                # else:
-                #     raise ValueError("Incorrect window size.")
+                # if len(self.STATE.buffer) == self.SETTINGS.window_size:
+                #     buffer_list = list(self.STATE.buffer)
+                #     yield (self.OUTPUT, buffer_list)
+                #     self.STATE.buffer.clear()
+        # while True:
+        #     samples, t_outlets = self.STATE.inlet.pull_sample()
+        #
+        #     if samples and t_outlets:
+        #         print(samples, t_outlets)
+        # samples = [s[0] for s in samples]
+        # t_inlet = pylsl.local_clock()
+        # t_lsloffset = self.STATE.inlet.time_correction()
+        #
+        # # match self.SETTINGS.window_size:
+        # if self.SETTINGS.window_size == 0:
+        #     self.SETTINGS.logger.debug(
+        #         (len(samples), f"{samples[0]}...{samples[-1]}")
+        #     )
+        #     log_line = f"{';'.join([str(t) for t in t_outlets])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
+        #
+        #     yield (self.OUTPUT, log_line)
+        # elif self.SETTINGS.window_size > 0:
+        #     samples_info = [
+        #         (to, t_lsloffset, t_inlet, s)
+        #         for to, s in zip(t_outlets, samples)
+        #     ]
+        #
+        #     self.STATE.buffer.extend(samples_info)
+        #
+        #     if len(self.STATE.buffer) == self.SETTINGS.window_size:
+        #         self.buffer_print(self.STATE.buffer, self.SETTINGS.logger)
+        #         log_line = self.buffer_to_string(self.STATE.buffer)
+        #
+        #         yield (self.OUTPUT, log_line)
+        #
+        #         self.STATE.buffer.clear()
+        # else:
+        #     raise ValueError("Incorrect window size.")
 
 
 # ==================================================================
