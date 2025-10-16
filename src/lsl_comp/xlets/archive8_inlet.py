@@ -89,14 +89,33 @@ class LSLInletUnit(ez.Unit):
     @ez.publisher(OUTPUT)
     async def inlet(self) -> AsyncGenerator:
         while True:
-            # chunk, timestamp = self.STATE.inlet.pull_chunk()
-            chunk, timestamp = self.STATE.inlet.pull_sample()
-            if chunk and timestamp:
-                chunk = chunk[0]
-                # log_line = f"{';'.join([str(t) for t in t_outlets])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
-                log_line = f"{timestamp},{chunk}\n"
+            # NOTE: archive 8
+            #
+            sample, timestamp = self.STATE.inlet.pull_sample()
+            if sample and timestamp:
+                sample = sample[0]
+                log_line = f"{timestamp},{sample}\n"
 
                 yield (self.OUTPUT, log_line)
+
+            # NOTE: sample is a single timestep with all channels: list[float]
+            # sample, timestamp = self.STATE.inlet.pull_sample()
+            #
+            # if sample and timestamp:
+            #     log_line = f"{timestamp},{';'.join(sample)}\n"
+            #
+            #     yield (self.OUTPUT, log_line)
+
+            # NOTE: chunk is multiple timesteps with all channels: list[list[float]]
+            # chunk, timestamp = self.STATE.inlet.pull_chunk()
+            #
+            # if chunk and timestamp:
+            #     # get 0th channel from all timesteps in the message
+            #     sample = [c[0] for c in chunk]
+            #
+            #     log_line = f"{timestamp},{';'.join(sample)}\n"
+            #
+            #     yield (self.OUTPUT, log_line)
 
 
 # ==================================================================
