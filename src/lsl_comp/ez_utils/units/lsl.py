@@ -71,8 +71,9 @@ class LSLInletUnit(ez.Unit):
     async def inlet(self) -> AsyncGenerator:
         while True:
             samples, t_outlet = self.STATE.inlet.pull_chunk()
-            print(t_outlet, samples)
-            yield (self.OUTPUT, "asdasd")
+            if samples and t_outlet:
+                print(t_outlet, samples)
+                yield (self.OUTPUT, "asdasd")
 
             # if sample and t_outlet:
             #     # [-1.0] sent after the last sample to gracefully close stream
