@@ -111,8 +111,8 @@ class AirsignalSystem(ez.Collection):
 
     def network(self) -> ez.NetworkDefinition:
         return (
-            (self.NSP.OUTPUT_SIGNAL, self.EXT.INPUT),
             (self.NSP.OUTPUT_SIGNAL, self.OUTLET.INPUT_SIGNAL),
+            (self.NSP.OUTPUT_SIGNAL, self.EXT.INPUT),
             (self.EXT.OUTPUT, self.LOG.INPUT),
         )
 

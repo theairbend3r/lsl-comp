@@ -66,26 +66,24 @@ class AxisArrayExtractorUnit(ez.Unit):
     @ez.subscriber(INPUT)
     @ez.publisher(OUTPUT)
     async def extract(self, message: AxisArray) -> AsyncGenerator:
-        if message.data == [-1.0]:
-            yield (self.OUTPUT, "-1.0")
+        # NOTE: we cannot really stop the ezlsl-outlet => ezlsl-inlet
+        # like we do for other xlets (by sending a -1 at the end) because we don't
+        # have control over what is being sent -- everything happens with ezmsg components.
+        t_inlet = pylsl.local_clock()
+        t_lsloffset = (
+            99.99  # ezmsg-lsl provides no way to get pylsl's time_correction()
+        )
+        # extract values from 2nd channel (index = 1) for all timesteps
+        samples: list[float] = message.data[:, 1].tolist()
 
-            raise ez.Complete
-        else:
-            t_inlet = pylsl.local_clock()
-            t_lsloffset = (
-                99.99  # ezmsg-lsl provides no way to get pylsl's time_correction()
-            )
-            # extract values from 2nd channel (index = 1) for all timesteps
-            samples: list[float] = message.data[:, 1].tolist()
+        # how many samples were actually received in a single message
+        num_samples = len(samples)
 
-            # how many samples were actually received in a single message
-            num_samples = len(samples)
+        # extract timestamps received from axisarray
+        gain: float = message.axes["time"].gain
+        first_timestamp: float = message.axes["time"].offset.item()
+        timestamps = [(first_timestamp + i * gain) for i in range(num_samples)]
 
-            # extract timestamps received from axisarray
-            gain: float = message.axes["time"].gain
-            first_timestamp: float = message.axes["time"].offset.item()
-            timestamps = [(first_timestamp + i * gain) for i in range(num_samples)]
+        log_line = f"{';'.join([str(t) for t in timestamps])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
 
-            log_line = f"{';'.join([str(t) for t in timestamps])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
-
-            yield (self.OUTPUT, log_line)
+        yield (self.OUTPUT, log_line)
