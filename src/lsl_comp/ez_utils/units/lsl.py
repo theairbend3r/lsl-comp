@@ -91,19 +91,16 @@ class LSLInletUnit(ez.Unit):
                         log_line = f"{';'.join([str(t) for t in t_outlets])},{t_lsloffset},{t_inlet},{';'.join(str(s) for s in samples)}\n"
                         print(log_line)
                     elif self.SETTINGS.window_size > 0:
-                        self.STATE.buffer.append(
-                            (
-                                t_outlets,
-                                t_lsloffset,
-                                t_inlet,
-                                samples,
-                            )
-                        )
+                        samples_info = [
+                            (to, t_lsloffset, t_inlet, s)
+                            for to, s in zip(t_outlets, samples)
+                        ]
+
+                        self.STATE.buffer.extend(samples_info)
 
                         if len(self.STATE.buffer) == self.SETTINGS.window_size:
                             self.SETTINGS.logger.debug(
                                 (
-                                    t_outlets,
                                     len(self.STATE.buffer),
                                     f"{self.STATE.buffer[0][-1]}...{self.STATE.buffer[-1][-1]}",
                                 )
