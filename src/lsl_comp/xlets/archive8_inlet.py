@@ -95,11 +95,20 @@ class LSLInletUnit(ez.Unit):
         while True:
             # NOTE: archive 8
             # no windowing
-            sample, t_outlet = self.STATE.inlet.pull_sample()
-            self.SETTINGS.logger.debug((t_outlet, sample))
+            # sample, t_outlet = self.STATE.inlet.pull_sample()
+            # self.SETTINGS.logger.debug((t_outlet, sample))
+            #
+            # if t_outlet:
+            #     log_line = f"{t_outlet},{sample[0]}\n"
+            #
+            #     yield (self.OUTPUT, log_line)
 
-            if t_outlet:
-                log_line = f"{t_outlet},{sample[0]}\n"
+            # NOTE: chunk is multiple timesteps with all channels: list[list[float]]
+            chunk, t_outlet = self.STATE.inlet.pull_chunk()
+            self.SETTINGS.logger.debug((t_outlet, chunk))
+
+            if chunk and t_outlet:
+                log_line = f"{t_outlet},{';'.join(chunk[0][0])}\n"
 
                 yield (self.OUTPUT, log_line)
 
