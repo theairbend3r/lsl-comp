@@ -7,6 +7,7 @@ from collections.abc import AsyncGenerator
 import click
 import ezmsg.core as ez
 from ezmsg.util.messages.axisarray import AxisArray
+from ezmsg.lsl.units import LSLOutletUnit, LSLOutletSettings
 from ezmsg.blackrock.nsp import NSPSource, NSPSourceSettings
 
 from lsl_comp.ez_utils.message import Message

@@ -94,6 +94,8 @@ class LSLInletUnit(ez.Unit):
             # NOTE: archive 8
             # no windowing
             sample, t_outlet = self.STATE.inlet.pull_sample()
+            self.SETTINGS.logger.debug((t_outlet, sample))
+
             if sample and t_outlet:
                 log_line = f"{t_outlet},{sample[0]}\n"
 
