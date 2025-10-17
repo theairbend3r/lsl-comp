@@ -42,15 +42,16 @@ class LogInletUnit(ez.Unit):
 
     @ez.subscriber(INPUT)
     async def on_message(self, message: str) -> None:
-        print(message)
-        if message == "-1.0":
-            self.SETTINGS.logger.info("Writing logs to disk...")
-            self.STATE.file.flush()
-            self.STATE.file.close()
-
-            raise ez.Complete
-        else:
-            self.STATE.file.write(message)
+        # print(message)
+        # if message == "-1.0":
+        #     self.SETTINGS.logger.info("Writing logs to disk...")
+        #     self.STATE.file.flush()
+        #     self.STATE.file.close()
+        #
+        #     raise ez.Complete
+        # else:
+        self.STATE.file.write(message)
+        self.STATE.file.flush()
 
 
 # ==================================================================
@@ -74,7 +75,8 @@ class LSLInletUnit(ez.Unit):
 
     def initialize(self) -> None:
         streams = pylsl.resolve_byprop("name", self.SETTINGS.stream_name)
-        self.STATE.inlet = pylsl.StreamInlet(streams[0], max_buflen=1)
+        # self.STATE.inlet = pylsl.StreamInlet(streams[0], max_buflen=1)
+        self.STATE.inlet = pylsl.StreamInlet(streams[0])
         self.STATE.buffer = deque(maxlen=self.SETTINGS.window_size)
 
     def buffer_print(self, buffer, logger) -> None:
@@ -90,30 +92,41 @@ class LSLInletUnit(ez.Unit):
     async def inlet(self) -> AsyncGenerator:
         while True:
             # NOTE: archive 8
-            #
-            sample, timestamp = self.STATE.inlet.pull_sample()
-            if sample and timestamp:
-                sample = sample[0]
-                log_line = f"{timestamp},{sample}\n"
+            # no windowing
+            sample, t_outlet = self.STATE.inlet.pull_sample()
+            if sample and t_outlet:
+                log_line = f"{t_outlet},{sample[0]}\n"
 
                 yield (self.OUTPUT, log_line)
 
+            # NOTE: archive 8
+            # windowing
+            sample, t_outlet = self.STATE.inlet.pull_sample()
+            if t_outlet:
+                self.STATE.buffer.append((sample[0], t_outlet))
+
+                if len(self.STATE.buffer) == self.SETTINGS.window_size:
+                    buffer_list = list(self.STATE.buffer)
+                    log_line = [f"{t},{s}\n" for t, s in buffer_list]
+                    yield (self.OUTPUT, log_line)
+                    self.STATE.buffer.clear()
+
             # NOTE: sample is a single timestep with all channels: list[float]
-            # sample, timestamp = self.STATE.inlet.pull_sample()
+            # sample, t_outlet = self.STATE.inlet.pull_sample()
             #
-            # if sample and timestamp:
-            #     log_line = f"{timestamp},{';'.join(sample)}\n"
+            # if sample and t_outlet:
+            #     log_line = f"{t_outlet},{';'.join(sample)}\n"
             #
             #     yield (self.OUTPUT, log_line)
 
             # NOTE: chunk is multiple timesteps with all channels: list[list[float]]
-            # chunk, timestamp = self.STATE.inlet.pull_chunk()
+            # chunk, t_outlet = self.STATE.inlet.pull_chunk()
             #
-            # if chunk and timestamp:
+            # if chunk and t_outlet:
             #     # get 0th channel from all timesteps in the message
             #     sample = [c[0] for c in chunk]
             #
-            #     log_line = f"{timestamp},{';'.join(sample)}\n"
+            #     log_line = f"{t_outlet},{';'.join(sample)}\n"
             #
             #     yield (self.OUTPUT, log_line)
 

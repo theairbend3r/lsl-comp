@@ -7,7 +7,6 @@ from collections.abc import AsyncGenerator
 import click
 import ezmsg.core as ez
 from ezmsg.util.messages.axisarray import AxisArray
-from ezmsg.lsl.units import LSLOutletUnit, LSLOutletSettings
 from ezmsg.blackrock.nsp import NSPSource, NSPSourceSettings
 
 from lsl_comp.ez_utils.message import Message
@@ -47,16 +46,17 @@ class LogOutletUnit(ez.Unit):
 
         self.SETTINGS.logger.debug((timestamps, samples))
 
-        if samples == [-1.0]:
-            self.SETTINGS.logger.info("Writing logs to disk...")
-            self.STATE.file.flush()
-            self.STATE.file.close()
-
-            raise ez.Complete
-
-        else:
-            log_line = f"{';'.join([str(t) for t in timestamps])},{';'.join(str(s) for s in samples)}\n"
-            self.STATE.file.write(log_line)
+        # if samples == [-1.0]:
+        #     self.SETTINGS.logger.info("Writing logs to disk...")
+        #     self.STATE.file.flush()
+        #     self.STATE.file.close()
+        #
+        #     raise ez.Complete
+        #
+        # else:
+        log_line = f"{';'.join([str(t) for t in timestamps])},{';'.join(str(s) for s in samples)}\n"
+        self.STATE.file.write(log_line)
+        self.STATE.file.flush()
 
 
 # ==================================================================
@@ -85,34 +85,34 @@ class NSPExtractorUnit(ez.Unit):
     async def extract(self, message: AxisArray) -> AsyncGenerator:
         # NSPSource() returns a numpy array of shape (time, channels)
 
-        if self.STATE.current_count >= self.SETTINGS.tc:
-            yield (
-                self.OUTPUT,
-                Message(samples=[-1.0], timestamps=[99.99]),
-            )
+        # if self.STATE.current_count >= self.SETTINGS.tc:
+        #     yield (
+        #         self.OUTPUT,
+        #         Message(samples=[-1.0], timestamps=[99.99]),
+        #     )
+        #
+        #     raise ez.Complete
+        #
+        # else:
+        # extract values from 2nd channel (index = 1) for all timesteps
+        samples: list[float] = message.data[:, 1].tolist()
 
-            raise ez.Complete
+        # how many samples were actually received in a single message
+        num_samples = len(samples)
 
-        else:
-            # extract values from 2nd channel (index = 1) for all timesteps
-            samples: list[float] = message.data[:, 1].tolist()
+        # extract timestamps received from hardware
+        # WARN: maybe we should pylsl.local_clock() as the first timestamp
+        # instead of reading it from the machine so it can be related back to markers timestamps
+        gain: float = message.axes["time"].gain
+        first_timestamp: float = message.axes["time"].offset.item()
+        timestamps = [(first_timestamp + i * gain) for i in range(num_samples)]
 
-            # how many samples were actually received in a single message
-            num_samples = len(samples)
+        yield (
+            self.OUTPUT,
+            Message(samples=samples, timestamps=timestamps),
+        )
 
-            # extract timestamps received from hardware
-            # WARN: maybe we should pylsl.local_clock() as the first timestamp
-            # instead of reading it from the machine so it can be related back to markers timestamps
-            gain: float = message.axes["time"].gain
-            first_timestamp: float = message.axes["time"].offset.item()
-            timestamps = [(first_timestamp + i * gain) for i in range(num_samples)]
-
-            yield (
-                self.OUTPUT,
-                Message(samples=samples, timestamps=timestamps),
-            )
-
-            self.STATE.current_count += num_samples
+        self.STATE.current_count += num_samples
 
 
 # ==================================================================
