@@ -76,7 +76,9 @@ class LSLInletUnit(ez.Unit):
     def initialize(self) -> None:
         streams = pylsl.resolve_byprop("name", self.SETTINGS.stream_name)
         # self.STATE.inlet = pylsl.StreamInlet(streams[0], max_buflen=1)
-        self.STATE.inlet = pylsl.StreamInlet(streams[0])
+        self.STATE.inlet = pylsl.StreamInlet(
+            streams[0], processing_flags=pylsl.proc_ALL
+        )
         self.STATE.buffer = deque(maxlen=self.SETTINGS.window_size)
 
     def buffer_print(self, buffer, logger) -> None:
@@ -96,26 +98,27 @@ class LSLInletUnit(ez.Unit):
             sample, t_outlet = self.STATE.inlet.pull_sample()
             self.SETTINGS.logger.debug((t_outlet, sample))
 
-            if sample and t_outlet:
+            if t_outlet:
                 log_line = f"{t_outlet},{sample[0]}\n"
 
                 yield (self.OUTPUT, log_line)
 
             # NOTE: archive 8
             # windowing
-            sample, t_outlet = self.STATE.inlet.pull_sample()
-            if t_outlet:
-                self.STATE.buffer.append((sample[0], t_outlet))
-
-                if len(self.STATE.buffer) == self.SETTINGS.window_size:
-                    buffer_list = list(self.STATE.buffer)
-                    log_line = [f"{t},{s}\n" for t, s in buffer_list]
-                    yield (self.OUTPUT, log_line)
-                    self.STATE.buffer.clear()
+            # sample, t_outlet = self.STATE.inlet.pull_sample()
+            # self.SETTINGS.logger.debug((t_outlet, sample))
+            # if t_outlet:
+            #     self.STATE.buffer.append((t_outlet, sample[0]))
+            #
+            #     if len(self.STATE.buffer) == self.SETTINGS.window_size:
+            #         buffer_list = list(self.STATE.buffer)
+            #         log_line = [f"{t},{s}\n" for t, s in buffer_list]
+            #         yield (self.OUTPUT, log_line)
+            #         self.STATE.buffer.clear()
 
             # NOTE: sample is a single timestep with all channels: list[float]
             # sample, t_outlet = self.STATE.inlet.pull_sample()
-            #
+            # self.SETTINGS.logger.debug((t_outlet, sample))
             # if sample and t_outlet:
             #     log_line = f"{t_outlet},{';'.join(sample)}\n"
             #
@@ -123,6 +126,7 @@ class LSLInletUnit(ez.Unit):
 
             # NOTE: chunk is multiple timesteps with all channels: list[list[float]]
             # chunk, t_outlet = self.STATE.inlet.pull_chunk()
+            # self.SETTINGS.logger.debug((t_outlet, chunk))
             #
             # if chunk and t_outlet:
             #     # get 0th channel from all timesteps in the message
